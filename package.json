@@ -1,0 +1,13 @@
+{
+  "name": "realisasi-perawatan-kencana-wanggarasi",
+  "version": "1.0.0",
+  "description": "Aplikasi Input Realisasi Perawatan Kebun PT Kencana Agri - Kebun Wanggarasi",
+  "scripts": {
+    "build": "mkdir -p www && cp index.html style.css app.js www/"
+  },
+  "dependencies": {
+    "@capacitor/android": "^6.1.2",
+    "@capacitor/cli": "^6.1.2",
+    "@capacitor/core": "^6.1.2"
+  }
+}

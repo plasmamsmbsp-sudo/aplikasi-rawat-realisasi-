@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sistem Input Realisasi Perawatan - PT Kencana Agri (Kebun Wanggarasi)</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- SheetJS untuk Export Excel (.xlsx) Multi-Sheet -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <!-- Font Inter -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="text-slate-800 min-h-screen flex flex-col">
+
+  <!-- HEADER & LOGO KENCANA -->
+  <header class="bg-gradient-to-r from-emerald-950 via-emerald-900 to-green-800 text-white shadow-lg sticky top-0 z-30">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-wrap items-center justify-between gap-4">
+      
+      <!-- Brand Identity + Logo Kencana -->
+      <div class="flex items-center gap-3.5">
+        <div class="w-12 h-12 rounded-xl bg-white/10 backdrop-blur-sm border border-amber-400/40 flex items-center justify-center shadow-inner shrink-0">
+          <svg viewBox="0 0 64 64" class="w-10 h-10" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="goldGrad" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="#FDE047"/>
+                <stop offset="50%" stop-color="#F59E0B"/>
+                <stop offset="100%" stop-color="#D97706"/>
+              </linearGradient>
+              <linearGradient id="leafGrad" x1="10" y1="54" x2="54" y2="10" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="#4ADE80"/>
+                <stop offset="100%" stop-color="#16A34A"/>
+              </linearGradient>
+            </defs>
+            <circle cx="32" cy="32" r="29" stroke="url(#goldGrad)" stroke-width="2.5" fill="#064E3B" fill-opacity="0.65"/>
+            <path d="M32 50C21 46 14 36 15 22C22 25 28 32 32 42" fill="url(#leafGrad)"/>
+            <path d="M32 50C43 46 50 36 49 22C42 25 36 32 32 42" fill="url(#leafGrad)"/>
+            <path d="M32 11L37 25L32 36L27 25L32 11Z" fill="url(#goldGrad)"/>
+            <path d="M20 17L26 26L22 29L20 17Z" fill="#FBBF24"/>
+            <path d="M44 17L38 26L42 29L44 17Z" fill="#FBBF24"/>
+            <rect x="29.5" y="42" width="5" height="10" rx="2" fill="url(#goldGrad)"/>
+          </svg>
+        </div>
+
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-bold tracking-widest uppercase text-amber-300">PT KENCANA AGRI — KEBUN WANGGARASI</span>
+            <span class="hidden sm:inline-block px-2 py-0.5 text-[10px] font-semibold bg-emerald-700/80 border border-emerald-500/40 rounded-full text-emerald-100">Plasma MSM & BSP</span>
+          </div>
+          <h1 class="text-lg sm:text-xl font-extrabold tracking-tight text-white leading-tight">
+            Realisasi Perawatan Kebun
+          </h1>
+        </div>
+      </div>
+
+      <!-- Status & Quick Actions -->
+      <div class="flex items-center gap-2.5 text-xs">
+        <div id="syncBadge" class="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-950/70 border border-emerald-700/60 text-emerald-200">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span>Auto-Save Aktif</span>
+        </div>
+        <button onclick="shareWhatsAppReport()" class="flex items-center gap-1.5 bg-green-600 hover:bg-green-500 text-white font-bold px-3.5 py-2 rounded-lg shadow transition cursor-pointer">
+          <span>📲 Laporan WA</span>
+        </button>
+        <button onclick="exportToExcel()" class="flex items-center gap-1.5 bg-amber-500 hover:bg-amber-400 text-emerald-950 font-bold px-3.5 py-2 rounded-lg shadow transition cursor-pointer">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+          <span>Export Excel (.xlsx)</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- NAVIGATION TABS -->
+    <nav class="bg-white text-slate-600 border-b border-slate-200 shadow-xs">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex overflow-x-auto">
+        <button id="tabBtn-input" onclick="switchTab('input')" class="tab-active px-5 py-3.5 text-sm whitespace-nowrap flex items-center gap-2 transition cursor-pointer">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+          1. Input Realisasi Harian
+        </button>
+        <button id="tabBtn-sheet" onclick="switchTab('sheet')" class="px-5 py-3.5 text-sm font-medium hover:text-emerald-800 whitespace-nowrap flex items-center gap-2 transition cursor-pointer">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+          2. Live Sheet & Rekapitulasi
+          <span id="badgeCount" class="ml-1 px-2 py-0.5 text-xs font-bold rounded-full bg-emerald-100 text-emerald-800">0</span>
+        </button>
+        <button id="tabBtn-master" onclick="switchTab('master')" class="px-5 py-3.5 text-sm font-medium hover:text-emerald-800 whitespace-nowrap flex items-center gap-2 transition cursor-pointer">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+          3. Pengaturan Master Data & Google Sheet
+        </button>
+      </div>
+    </nav>
+  </header>
+
+  <!-- MAIN CONTENT CONTAINER -->
+  <main class="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1">
+
+    <!-- TAB 1: INPUT REALISASI HARIAN -->
+    <section id="tab-input" class="space-y-6">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-xs flex items-center justify-between">
+          <div>
+            <p class="text-xs font-semibold text-slate-500 uppercase">Input Tanggal Dipilih</p>
+            <p id="kpiTanggalCount" class="text-2xl font-extrabold text-emerald-800 mt-1">0 Baris</p>
+          </div>
+          <div class="w-10 h-10 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center font-bold">📅</div>
+        </div>
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-xs flex items-center justify-between">
+          <div>
+            <p class="text-xs font-semibold text-slate-500 uppercase">Total Tenaga Kerja (HK)</p>
+            <p id="kpiTotalHK" class="text-2xl font-extrabold text-amber-600 mt-1">0 HK</p>
+          </div>
+          <div class="w-10 h-10 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center font-bold">👷</div>
+        </div>
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-xs flex items-center justify-between">
+          <div>
+            <p class="text-xs font-semibold text-slate-500 uppercase">Afdeling Aktif Hari Ini</p>
+            <p id="kpiAfdelingAktif" class="text-2xl font-extrabold text-slate-800 mt-1">0 Afd</p>
+          </div>
+          <div class="w-10 h-10 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center font-bold">🌴</div>
+        </div>
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-xs flex items-center justify-between">
+          <div>
+            <p class="text-xs font-semibold text-slate-500 uppercase">Total Semua Data Sheet</p>
+            <p id="kpiAllRecords" class="text-2xl font-extrabold text-slate-800 mt-1">0 Data</p>
+          </div>
+          <div class="w-10 h-10 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center font-bold">📊</div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <!-- FORM INPUT -->
+        <div class="lg:col-span-7 bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+          <div class="bg-emerald-900 text-white px-6 py-4 flex items-center justify-between">
+            <div>
+              <h2 class="font-bold text-base">Form Input Realisasi Kerja Harian</h2>
+              <p class="text-xs text-emerald-200">Blok & satuan otomatis menyesuaikan master data yang ditetapkan</p>
+            </div>
+            <span class="text-xs bg-amber-400 text-emerald-950 font-bold px-2.5 py-1 rounded-md">Wanggarasi</span>
+          </div>
+
+          <form id="realisasiForm" onsubmit="handleFormSubmit(event)" class="p-6 space-y-4">
+            <input type="hidden" id="editId" value="" />
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Tanggal Realisasi <span class="text-red-500">*</span></label>
+                <input type="date" id="inpTanggal" required onchange="updateDashboardKPI()" class="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-emerald-600 focus:border-emerald-600 text-sm font-medium" />
+              </div>
+
+              <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Nama Mandor / Krani <span class="text-red-500">*</span></label>
+                <input type="text" id="inpMandor" required placeholder="Contoh: Ramin Adam / Haris / Meti" class="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-emerald-600 focus:border-emerald-600 text-sm" />
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Afdeling <span class="text-red-500">*</span></label>
+                <select id="inpAfdeling" required onchange="onAfdelingChange()" class="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 bg-white focus:ring-2 focus:ring-emerald-600 focus:border-emerald-600 text-sm font-semibold text-emerald-950">
+                  <option value="">-- Pilih Afdeling --</option>
+                </select>
+              </div>
+
+              <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">
+                  Blok Ditetapkan <span class="text-red-500">*</span>
+                  <span id="infoLuasBlok" class="ml-1 text-[11px] font-normal text-emerald-700"></span>
+                </label>
+                <select id="inpBlok" required onchange="onBlokChange()" class="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 bg-white focus:ring-2 focus:ring-emerald-600 focus:border-emerald-600 text-sm font-semibold">
+                  <option value="">-- Pilih Afdeling Terlebih Dahulu --</option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Jenis Pekerjaan Perawatan <span class="text-red-500">*</span></label>
+              <select id="inpPekerjaan" required onchange="onPekerjaanChange()" class="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 bg-white focus:ring-2 focus:ring-emerald-600 focus:border-emerald-600 text-sm font-semibold text-slate-800">
+                <option value="">-- Pilih Jenis Pekerjaan --</option>
+              </select>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Volume / Hasil Kerja <span class="text-red-500">*</span></label>
+                <input type="number" step="0.01" min="0" id="inpHasil" required placeholder="0.00" class="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-emerald-600 focus:border-emerald-600 text-sm font-bold text-emerald-900" />
+              </div>
+
+              <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Satuan Unit <span class="text-red-500">*</span></label>
+                <select id="inpSatuan" required class="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 bg-amber-50/60 focus:ring-2 focus:ring-emerald-600 focus:border-emerald-600 text-sm font-bold text-amber-900">
+                </select>
+              </div>
+
+              <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Jumlah HK (Orang) <span class="text-red-500">*</span></label>
+                <input type="number" step="0.5" min="0" id="inpHK" required placeholder="Contoh: 5" class="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-emerald-600 focus:border-emerald-600 text-sm font-bold" />
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Pemakaian Bahan / Dosis (Opsional)</label>
+                <input type="text" id="inpBahan" placeholder="Contoh: Glyphosate 3 Liter / NPK 150 Kg" class="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-emerald-600 focus:border-emerald-600 text-sm" />
+              </div>
+
+              <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Keterangan Lapangan</label>
+                <input type="text" id="inpKeterangan" placeholder="Kondisi cuaca / catatan blok" class="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-emerald-600 focus:border-emerald-600 text-sm" />
+              </div>
+            </div>
+
+            <div class="pt-3 flex flex-wrap items-center gap-3 border-t border-slate-100">
+              <button type="submit" id="btnSubmitForm" class="flex-1 sm:flex-none bg-emerald-700 hover:bg-emerald-800 text-white font-bold px-6 py-3 rounded-xl shadow-md transition flex items-center justify-center gap-2 cursor-pointer">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                <span>Simpan & Update ke Sheet</span>
+              </button>
+              <button type="button" id="btnCancelEdit" onclick="resetForm()" class="hidden px-4 py-3 rounded-xl border border-slate-300 text-slate-600 hover:bg-slate-100 font-semibold text-sm cursor-pointer">
+                Batal Edit
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- LIVE FEED INPUT TERBARU -->
+        <div class="lg:col-span-5 bg-white rounded-2xl border border-slate-200 shadow-sm flex flex-col overflow-hidden">
+          <div class="px-5 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50">
+            <div>
+              <h3 class="font-bold text-slate-800 text-sm">Log Input Terakhir (Live)</h3>
+              <p class="text-xs text-slate-500">Otomatis masuk ke tabel sheet & siap ekspor</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <button onclick="shareWhatsAppReport()" class="text-xs font-bold text-green-700 hover:underline cursor-pointer">📲 Kirim WA</button>
+              <span class="text-slate-300">|</span>
+              <button onclick="switchTab('sheet')" class="text-xs font-bold text-emerald-700 hover:underline cursor-pointer">Lihat Semua →</button>
+            </div>
+          </div>
+          <div id="recentFeedList" class="p-4 space-y-3 overflow-y-auto max-h-[500px] flex-1"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 2: LIVE SHEET & REKAPITULASI -->
+    <section id="tab-sheet" class="hidden space-y-6">
+      <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs space-y-4">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 class="text-base font-extrabold text-slate-800">Database Realisasi Perawatan (Live Sheet)</h2>
+            <p class="text-xs text-slate-500">Setiap perubahan pada form input langsung memperbarui tabel & rekapitulasi di bawah ini.</p>
+          </div>
+          <div class="flex flex-wrap items-center gap-2">
+            <button onclick="shareWhatsAppReport()" class="px-3.5 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white text-xs font-bold flex items-center gap-1.5 shadow-xs cursor-pointer">
+              <span>📲 Kirim Ringkasan WA</span>
+            </button>
+            <button onclick="syncToGoogleSheet()" id="btnSyncGsheet" class="px-3.5 py-2 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold flex items-center gap-1.5 shadow-xs cursor-pointer">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+              <span>Kirim ke Google Sheet</span>
+            </button>
+            <button onclick="exportToExcel()" class="px-3.5 py-2 rounded-lg bg-amber-500 hover:bg-amber-400 text-emerald-950 text-xs font-bold flex items-center gap-1.5 shadow-xs cursor-pointer">
+              <span>📥 Download Excel (.xlsx)</span>
+            </button>
+            <button onclick="exportToCSV()" class="px-3.5 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold cursor-pointer">
+              CSV
+            </button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 pt-2 border-t border-slate-100">
+          <div>
+            <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Filter Tanggal</label>
+            <input type="date" id="fltTanggal" onchange="renderSheetTable()" class="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs" />
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Filter Afdeling</label>
+            <select id="fltAfdeling" onchange="renderSheetTable()" class="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs bg-white">
+              <option value="">Semua Afdeling</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Filter Pekerjaan</label>
+            <select id="fltPekerjaan" onchange="renderSheetTable()" class="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs bg-white">
+              <option value="">Semua Pekerjaan</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Cari Blok / Mandor</label>
+            <input type="text" id="fltSearch" onkeyup="renderSheetTable()" placeholder="Ketik blok atau nama..." class="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs" />
+          </div>
+          <div class="flex items-end">
+            <button onclick="resetFilters()" class="w-full px-3 py-2 rounded-lg border border-slate-300 hover:bg-slate-100 text-xs font-semibold text-slate-600 cursor-pointer">
+              Reset Filter
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse text-xs">
+            <thead>
+              <tr class="bg-emerald-950 text-white uppercase tracking-wider">
+                <th class="py-3 px-3.5 font-bold">No</th>
+                <th class="py-3 px-3.5 font-bold">Tanggal</th>
+                <th class="py-3 px-3.5 font-bold">Afdeling</th>
+                <th class="py-3 px-3.5 font-bold">Blok</th>
+                <th class="py-3 px-3.5 font-bold">Jenis Pekerjaan</th>
+                <th class="py-3 px-3.5 font-bold text-right">Realisasi</th>
+                <th class="py-3 px-3.5 font-bold">Satuan</th>
+                <th class="py-3 px-3.5 font-bold text-right">HK</th>
+                <th class="py-3 px-3.5 font-bold text-right">Output/HK</th>
+                <th class="py-3 px-3.5 font-bold">Bahan / Dosis</th>
+                <th class="py-3 px-3.5 font-bold">Mandor</th>
+                <th class="py-3 px-3.5 font-bold text-center">Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="sheetTableBody" class="divide-y divide-slate-200"></tbody>
+            <tfoot id="sheetTableFoot" class="bg-emerald-50 font-bold text-emerald-950 border-t-2 border-emerald-700"></tfoot>
+          </table>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+          <div class="bg-slate-800 text-white px-5 py-3.5">
+            <h3 class="font-bold text-sm">Rekapitulasi Otomatis per Jenis Pekerjaan</h3>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-xs text-left">
+              <thead class="bg-slate-100 text-slate-700 font-bold uppercase">
+                <tr>
+                  <th class="py-2.5 px-4">Jenis Pekerjaan</th>
+                  <th class="py-2.5 px-4 text-right">Total Output</th>
+                  <th class="py-2.5 px-4">Satuan</th>
+                  <th class="py-2.5 px-4 text-right">Total HK</th>
+                  <th class="py-2.5 px-4 text-right">Prestasi (Out/HK)</th>
+                </tr>
+              </thead>
+              <tbody id="rekapPekerjaanBody" class="divide-y divide-slate-200"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+          <div class="bg-emerald-900 text-white px-5 py-3.5">
+            <h3 class="font-bold text-sm">Rekapitulasi Otomatis per Afdeling & Blok</h3>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-xs text-left">
+              <thead class="bg-slate-100 text-slate-700 font-bold uppercase">
+                <tr>
+                  <th class="py-2.5 px-4">Afdeling</th>
+                  <th class="py-2.5 px-4">Blok</th>
+                  <th class="py-2.5 px-4 text-right">Jml Aktivitas</th>
+                  <th class="py-2.5 px-4 text-right">Total HK</th>
+                </tr>
+              </thead>
+              <tbody id="rekapAfdelingBody" class="divide-y divide-slate-200"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 3: MASTER DATA & INTEGRASI GOOGLE SHEET -->
+    <section id="tab-master" class="hidden space-y-6">
+      <div class="bg-amber-50 border border-amber-300 rounded-xl p-4 flex flex-wrap items-center justify-between gap-4">
+        <div class="text-xs text-amber-950">
+          <p class="font-bold text-sm">Pengaturan Dinamis Master Data Kebun Wanggarasi</p>
+          <p class="mt-0.5">Tambahkan atau ubah <strong>Afdeling, Blok yang ditetapkan, Jenis Pekerjaan, dan Satuan Unit</strong> di sini. Perubahan langsung muncul di form input dan ikut terekspor ke Excel.</p>
+        </div>
+        <button onclick="resetMasterToDefault()" class="px-3 py-2 bg-white border border-amber-400 hover:bg-amber-100 text-amber-900 rounded-lg text-xs font-bold cursor-pointer">
+          Reset ke Data Awal Wanggarasi
+        </button>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Master Afdeling & Blok -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-xs p-5 space-y-4">
+          <div class="border-b border-slate-100 pb-3">
+            <h3 class="font-bold text-slate-800 text-sm">1. Master Afdeling & Blok Ditetapkan</h3>
+            <p class="text-xs text-slate-500">Tetapkan daftar blok untuk masing-masing Afdeling</p>
+          </div>
+
+          <div class="flex gap-2">
+            <input type="text" id="newAfdName" placeholder="Nama Afdeling (mis: Plasma BSP AFD 4)" class="flex-1 px-3 py-2 rounded-lg border border-slate-300 text-xs" />
+            <button onclick="addAfdeling()" class="px-3 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-xs font-bold cursor-pointer">+ Afd</button>
+          </div>
+
+          <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
+            <p class="text-[11px] font-bold text-slate-600 uppercase">Tambah Blok ke Afdeling:</p>
+            <select id="mstSelectAfd" class="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs bg-white font-semibold"></select>
+            <div class="grid grid-cols-2 gap-2">
+              <input type="text" id="newBlokCode" placeholder="Kode Blok (mis: D01/2023)" class="px-3 py-2 rounded-lg border border-slate-300 text-xs" />
+              <input type="number" step="0.1" id="newBlokLuas" placeholder="Luas Ha (mis: 28.5)" class="px-3 py-2 rounded-lg border border-slate-300 text-xs" />
+            </div>
+            <button onclick="addBlokToAfdeling()" class="w-full py-2 bg-amber-500 hover:bg-amber-400 text-emerald-950 rounded-lg text-xs font-bold cursor-pointer">+ Tambah Blok</button>
+          </div>
+
+          <div id="masterAfdList" class="space-y-3 max-h-80 overflow-y-auto pr-1"></div>
+        </div>
+
+        <!-- Master Jenis Pekerjaan -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-xs p-5 space-y-4">
+          <div class="border-b border-slate-100 pb-3">
+            <h3 class="font-bold text-slate-800 text-sm">2. Master Jenis Pekerjaan Perawatan</h3>
+            <p class="text-xs text-slate-500">Atur jenis pekerjaan & satuan unit otomatisnya</p>
+          </div>
+
+          <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
+            <input type="text" id="newJobName" placeholder="Nama Pekerjaan (mis: Chemis Piringan)" class="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs" />
+            <div class="flex gap-2">
+              <select id="newJobUnit" class="flex-1 px-3 py-2 rounded-lg border border-slate-300 text-xs bg-white font-semibold"></select>
+              <button onclick="addJob()" class="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-xs font-bold cursor-pointer">+ Simpan</button>
+            </div>
+          </div>
+
+          <div id="masterJobList" class="divide-y divide-slate-100 max-h-96 overflow-y-auto"></div>
+        </div>
+
+        <!-- Master Satuan Unit & Google Sheets -->
+        <div class="space-y-6">
+          <div class="bg-white rounded-2xl border border-slate-200 shadow-xs p-5 space-y-4">
+            <div class="border-b border-slate-100 pb-3">
+              <h3 class="font-bold text-slate-800 text-sm">3. Master Satuan Unit</h3>
+              <p class="text-xs text-slate-500">Satuan yang dapat dipilih pada form realisasi</p>
+            </div>
+
+            <div class="flex gap-2">
+              <input type="text" id="newUnitName" placeholder="Satuan baru (mis: Pokok / Meter / Sak)" class="flex-1 px-3 py-2 rounded-lg border border-slate-300 text-xs" />
+              <button onclick="addUnit()" class="px-3.5 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-xs font-bold cursor-pointer">+ Unit</button>
+            </div>
+
+            <div id="masterUnitList" class="flex flex-wrap gap-2"></div>
+          </div>
+
+          <div class="bg-white rounded-2xl border border-slate-200 shadow-xs p-5 space-y-3">
+            <div class="flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-green-600"></span>
+              <h3 class="font-bold text-slate-800 text-sm">Koneksi Auto-Update Google Sheets</h3>
+            </div>
+            <p class="text-xs text-slate-600 leading-relaxed">
+              Masukkan URL <strong>Google Apps Script Web App</strong> agar setiap kali menekan tombol <em>Simpan</em>, data langsung terkirim otomatis ke Google Spreadsheet online Anda.
+            </p>
+            <input type="url" id="gsheetWebhookUrl" onchange="saveWebhookUrl()" placeholder="https://script.google.com/macros/s/...../exec" class="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs font-mono" />
+            <div class="flex items-center justify-between pt-1">
+              <label class="flex items-center gap-2 text-xs font-medium text-slate-700 cursor-pointer">
+                <input type="checkbox" id="autoSyncCheck" onchange="saveWebhookUrl()" class="rounded text-emerald-700" />
+                <span>Otomatis kirim saat Simpan</span>
+              </label>
+              <button onclick="toggleScriptGuide()" class="text-xs font-bold text-emerald-700 hover:underline cursor-pointer">Lihat Kode Apps Script</button>
+            </div>
+
+            <div id="appsScriptGuide" class="hidden mt-2 p-3 bg-slate-900 text-emerald-300 rounded-xl text-[11px] font-mono overflow-x-auto">
+              <p class="text-slate-400 mb-1">// Tempel di Google Sheet -> Ekstensi -> Apps Script -> Deploy Web App (Anyone):</p>
+<pre>function doPost(e) {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  var data = JSON.parse(e.postData.contents);
+  if (sheet.getLastRow() === 0) {
+    sheet.appendRow(["ID","Tanggal","Afdeling","Blok","Pekerjaan","Hasil","Satuan","HK","Bahan","Mandor","Keterangan"]);
+  }
+  sheet.appendRow([data.id, data.tanggal, data.afdeling, data.blok, data.pekerjaan, data.hasil, data.satuan, data.hk, data.bahan, data.mandor, data.keterangan]);
+  return ContentService.createTextOutput(JSON.stringify({status:"ok"})).setMimeType(ContentService.MimeType.JSON);
+}</pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="bg-white border-t border-slate-200 py-4 mt-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-wrap items-center justify-between text-xs text-slate-500 gap-2">
+      <p>© 2026 <strong class="text-emerald-900">PT Kencana Agri — Kebun Wanggarasi</strong> (Plasma MSM & Plasma BSP).</p>
+      <p>Data tersimpan otomatis di perangkat & siap ekspor ke Excel (.xlsx)</p>
+    </div>
+  </footer>
+
+  <!-- TOAST NOTIFICATION -->
+  <div id="toast" class="fixed bottom-5 right-5 z-50 transform translate-y-20 opacity-0 transition-all duration-300 bg-emerald-950 text-white px-4 py-3 rounded-xl shadow-xl border border-emerald-700 text-xs font-semibold flex items-center gap-2.5">
+    <span id="toastIcon">✅</span>
+    <span id="toastMsg">Data berhasil disimpan!</span>
+  </div>
+
+  <!-- Application Script -->
+  <script src="app.js"></script>
+</body>
+</html>
